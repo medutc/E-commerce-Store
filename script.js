@@ -2,201 +2,31 @@
 
 // 1. 40 Completely Unique Products with Perfectly Matched Images
 
-const products = [
- { id: 1, name: "Obsidian Mechanical Keyboard", price: 129.99, image: "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=800&h=800&fit=crop" },
-  { id: 2, name: "Ergonomic Wireless Mouse", price: 79.99, image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800&h=800&fit=crop" },
-  { id: 3, name: "UltraWide Curved Monitor", price: 599.99, image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&h=800&fit=crop" },
-  { id: 4, name: "Noise-Canceling Headphones", price: 249.99, image: "images/casquo.webp" },
-  { id: 5, name: "True Wireless Earbuds", price: 149.99, image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&h=800&fit=crop" },
-  { id: 6, name: "Horizon Smartwatch", price: 199.99, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&h=800&fit=crop" },
-{ id: 7, name: "Carbon Fiber Desk Mat", price: 39.99, image: "images/carbonDesk.webp" },  { id: 8, name: "Lumina Desk Lamp", price: 59.99, image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&h=800&fit=crop" },
-  { id: 9, name: "Aluminum Laptop Stand", price: 49.99, image: "images/laptopStand.webp" },
-{ id: 10, name: "HD Streaming Webcam", price: 89.99, image: "images/webcam.jpg" }, {
-    id: 11,
-    name: "Studio Condenser Microphone",
-    price: 119.99,
-    image: "images/micro.avif"
-  },
-  {
-    id: 12,
-    name: "Ambient Smart Speaker",
-    price: 139.99,
-    image: "https://images.unsplash.com/photo-1543512214-318c7553f230?w=800&h=800&fit=crop"
-  },
-  {
-    id: 13,
-    name: "Magnetic Wireless Charger",
-    price: 34.99,
-    image: "images/wirelessCharger.jpg"
-  },
-  {
-    id: 14,
-    name: "Portable SSD 1TB",
-    price: 109.99,
-    image: "images/disk.jpg"
-  },
-  {
-    id: 15,
-    name: "USB-C Docking Station",
-    price: 89.99,
-    image: "images/usbc.jpg"
-  },
-  {
-    id: 16,
-    name: "Premium Office Chair",
-    price: 349.99,
-    image: "images/chair.webp"
-  },
-  {
-    id: 17,
-    name: "Adjustable Standing Desk",
-    price: 449.99,
-    image: "images/desk.webp"
-  },
-  {
-    id: 18,
-    name: "Dual Monitor Arm",
-    price: 69.99,
-    image: "images/duel.webp"
-  },
-  {
-    id: 19,
-    name: "Immersive VR Headset",
-    price: 299.99,
-    image: "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=800&h=800&fit=crop"
-  },
-  {
-    id: 20,
-    name: "Pro Gaming Controller",
-    price: 69.99,
-    image: "images/magnette.avif"
-  },
-  {
-    id: 21,
-    name: "Precision Tablet Stylus",
-    price: 99.99,
-    image: "images/stylo.jpg"
-  },
-  {
-    id: 22,
-    name: "Digital E-Reader",
-    price: 129.99,
-    image: "images/book.jpg"
-  },
-  {
-    id: 23,
-    name: "4K Action Camera",
-    price: 199.99,
-    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&h=800&fit=crop"
-  },
-  {
-    id: 24,
-    name: "Quadcopter Drone",
-    price: 499.99,
-    image: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=800&h=800&fit=crop"
-  },
-  {
-    id: 25,
-    name: "Smartphone Gimbal",
-    price: 119.99,
-    image: "images/gimbal.jpg"
-  },
-  {
-    id: 26,
-    name: "LED Ring Light",
-    price: 45.99,
-    image: "images/light.webp"
-  },
-  {
-    id: 27,
-    name: "Wireless Numpad",
-    price: 39.99,
-    image: "images/clavier.jpg"
-  },
-  {
-    id: 28,
-    name: "Under-Desk Cable Tray",
-    price: 24.99,
-    image: "images/under.jpg"
-  },
-  {
-    id: 29,
-    name: "Aluminum Headphone Stand",
-    price: 29.99,
-    image: "images/casque.jpg"
-  },
-  {
-    id: 30,
-    name: "Acoustic Wall Panels",
-    price: 59.99,
-    image: "images/wall.webp"
-  },
-  {
-    id: 31,
-    name: "Blue Light Blocking Glasses",
-    price: 19.99,
-    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&h=800&fit=crop"
-  },
-  {
-    id: 32,
-    name: "Smart Thermostat Mug",
-    price: 99.99,
-    image: "images/smart.jpg"
-  },
-  {
-    id: 33,
-    name: "Portable 15-inch Monitor",
-    price: 179.99,
-    image: "images/monitor.webp"
-  },
-  {
-    id: 34,
-    name: "Mesh Wi-Fi Router",
-    price: 149.99,
-    image: "https://images.unsplash.com/photo-1606904825846-647eb07f5be2?w=800&h=800&fit=crop"
-  },
-  {
-    id: 35,
-    name: "Home NAS Server",
-    price: 299.99,
-    image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=800&fit=crop"
-  },
-  {
-    id: 36,
-    name: "Smart Home Plug",
-    price: 14.99,
-    image: "images/plug.jpg"
-  },
-  {
-    id: 37,
-    name: "RGB LED Light Strip",
-    price: 29.99,
-    image: "images/rgb.avif"
-  },
-  {
-    id: 38,
-    name: "Desktop 3D Printer",
-    price: 399.99,
-    image: "images/3d.jpg"
-  },
-  {
-    id: 39,
-    name: "20,000mAh Power Bank",
-    price: 49.99,
-    image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=800&h=800&fit=crop"
-  },
-  {
-    id: 40,
-    name: "Bluetooth Item Tracker",
-    price: 29.99,
-    image: "images/item.jpg"
-  }
-];
+let products = []; // Start empty
 
-// Add a simulated date to each product so the "Newest" sort filter works
-products.forEach(product => {
-    product.dateAdded = Date.now() - Math.floor(Math.random() * 5000000000);
-});
+// Fetch products from the database on page load
+async function fetchProducts() {
+    try {
+        const response = await fetch('http://localhost:5000/api/products');
+        products = await response.json();
+        
+        // Ensure properties map correctly if DB names differ from frontend
+        products = products.map(p => ({
+            id: p._id, // MongoDB uses _id
+            name: p.name,
+            price: p.price,
+            image: p.imageUrl || p.image, 
+            description: p.description
+        }));
+        
+        renderProducts(products); // Your existing render function
+    } catch (error) {
+        console.error("Error fetching products:", error);
+    }
+}
+
+// Call this when the script loads
+fetchProducts();
 
 // 4. DOM Elements
 const productContainer = document.getElementById('product-container');
@@ -269,18 +99,107 @@ window.switchAuthTab = function(tab) {
 };
 
 // Prevent default form submission (Preparing for backend fetch)
-loginForm.addEventListener('submit', (e) => {
+// Login Form Submission
+loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log("Login form submitted. Ready for Express connection.");
-    // Temporarily close modal to simulate success
-    authOverlay.classList.remove('active'); 
+    const email = loginForm.querySelector('input[type="email"]').value;
+    const password = loginForm.querySelector('input[type="password"]').value;
+
+    try {
+        const res = await fetch('http://localhost:5000/api/users/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            localStorage.setItem('userInfo', JSON.stringify(data));
+            alert('Login Successful!');
+            authOverlay.classList.remove('active'); // Close modal
+        } else {
+            alert(data.message || 'Login failed');
+        }
+    } catch (error) {
+        console.error(error);
+    }
 });
 
-registerForm.addEventListener('submit', (e) => {
+// Register Form Submission
+registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log("Register form submitted. Ready for Express connection.");
-    // Temporarily close modal to simulate success
-    authOverlay.classList.remove('active');
+    const name = registerForm.querySelector('input[placeholder="Full Name"]').value;
+    const email = registerForm.querySelector('input[type="email"]').value;
+    const password = registerForm.querySelector('input[type="password"]').value;
+
+    try {
+        const res = await fetch('http://localhost:5000/api/users', { // Assuming POST /api/users registers
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            localStorage.setItem('userInfo', JSON.stringify(data));
+            alert('Registration Successful!');
+            authOverlay.classList.remove('active'); // Close modal
+        } else {
+            alert(data.message || 'Registration failed');
+        }
+    } catch (error) {
+        console.error(error);
+    }
+});
+const checkoutBtn = document.querySelector('.checkout-btn');
+
+checkoutBtn.addEventListener('click', async () => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    
+    if (!userInfo || !userInfo.token) {
+        alert("Please sign in to place an order.");
+        authOverlay.classList.add('active'); // Open auth modal
+        return;
+    }
+
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+
+    // Format cart to match the Mongoose Order schema
+    const orderItems = cart.map(item => ({
+        product: item.id,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        qty: item.quantity
+    }));
+
+    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    try {
+        const res = await fetch('http://localhost:5000/api/orders', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userInfo.token}` // Send the JWT token
+            },
+            body: JSON.stringify({ orderItems, totalPrice })
+        });
+
+        if (res.ok) {
+            alert('Order placed successfully!');
+            cart = []; // Clear local cart
+            updateCartUI();
+            closeCart();
+        } else {
+            const data = await res.json();
+            alert(data.message || 'Failed to place order');
+        }
+    } catch (error) {
+        console.error("Checkout error:", error);
+    }
 });
 // Cart State Array
 let cart = [];
