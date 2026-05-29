@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { getProducts } = require('../controllers/productController');
 
-// GET request to /api/products will trigger the getProducts function
+// When a GET request hits /api/products, run the getProducts controller
 router.get('/', getProducts);
 
 module.exports = router;
