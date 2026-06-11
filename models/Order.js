@@ -4,6 +4,12 @@ const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+   // In models/Order.js, add inside the schema:
+paymentResult: {
+  id:         { type: String },
+  status:     { type: String },
+  updateTime: { type: String },
+},
     orderItems: [
         {
             name: { type: String, required: true },
@@ -25,3 +31,4 @@ const orderSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);
+// In models/Order.js, add inside the schema:

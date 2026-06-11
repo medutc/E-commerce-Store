@@ -58,20 +58,29 @@ const getOrderById = async (req, res) => {
 // @route   PUT /api/orders/:id/pay
 // @access  Private/Admin
 const updateOrderToPaid = async (req, res) => {
-    try {
-        const order = await Order.findById(req.params.id);
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
-        }
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
 
-        order.isPaid = true;
-        order.paidAt = Date.now();
-
-        const updatedOrder = await order.save();
-        res.json(updatedOrder);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    // Make sure the order belongs to this user (unless admin)
+    if (!req.user.isAdmin && order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized' });
     }
+
+    order.isPaid = true;
+    order.paidAt = Date.now();
+    // Optionally store the Stripe paymentIntent ID
+    order.paymentResult = {
+      id: req.body.paymentIntentId || 'stripe',
+      status: 'paid',
+      updateTime: new Date().toISOString(),
+    };
+
+    const updated = await order.save();
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 // @desc    Get all orders (Admin only)

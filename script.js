@@ -395,55 +395,153 @@ cartIcon.addEventListener('click', openCart);
 closeCartBtn.addEventListener('click', closeCart);
 cartOverlay.addEventListener('click', closeCart);
 
-// ─── Checkout ─────────────────────────────────────────────────────────────────
-document.querySelector('.checkout-btn').addEventListener('click', async () => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+// ─── Stripe Setup ─────────────────────────────────────────────────────────────
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51ThFo0PxraSxO1NNPLXB6lKaRPSO33APcXiePG2G73dboOG1qsW6SNZbkgWbU77Fo277PnJ7xlr9b9dcLpts6sHM00OodijFLZ'; // ← replace this
+const stripeClient = Stripe(STRIPE_PUBLISHABLE_KEY);
+const stripeElements = stripeClient.elements();
 
-    if (!userInfo || !userInfo.token) {
-        alert("Please sign in to place an order.");
-        authOverlay.classList.add('active');
-        return;
+let cardElement = null;
+let cardMounted = false;
+
+// ─── Checkout Modal ────────────────────────────────────────────────────────────
+function openCheckoutModal() {
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+  if (!userInfo || !userInfo.token) {
+    alert('Please sign in to continue.');
+    authOverlay.classList.add('active');
+    return;
+  }
+  if (cart.length === 0) {
+    alert('Your cart is empty!');
+    return;
+  }
+
+  // Populate order summary
+  const summaryEl = document.getElementById('checkout-summary');
+  summaryEl.innerHTML = cart.map(item => `
+    <div class="checkout-summary-item">
+      <span>${item.name} × ${item.quantity}</span>
+      <span>$${(item.price * item.quantity).toFixed(2)}</span>
+    </div>
+  `).join('');
+
+  // Show total
+  const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  document.getElementById('checkout-total-display').textContent = `$${total.toFixed(2)}`;
+
+  // Mount Stripe Card Element (only once)
+  if (!cardMounted) {
+    cardElement = stripeElements.create('card', {
+      style: {
+        base: {
+          color: '#ffffff',
+          fontFamily: 'inherit',
+          fontSize: '15px',
+          '::placeholder': { color: '#aab7c4' }
+        },
+        invalid: { color: '#ff6b6b' }
+      }
+    });
+    cardElement.mount('#card-element');
+    cardElement.on('change', ({ error }) => {
+      document.getElementById('card-errors').textContent = error ? error.message : '';
+    });
+    cardMounted = true;
+  }
+
+  document.getElementById('checkout-overlay').classList.add('active');
+  document.getElementById('checkout-modal').classList.add('open');
+}
+
+function closeCheckoutModal() {
+  document.getElementById('checkout-overlay').classList.remove('active');
+  document.getElementById('checkout-modal').classList.remove('open');
+}
+
+// ─── Submit Payment ────────────────────────────────────────────────────────────
+async function submitPayment() {
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+  if (!userInfo) return;
+
+  const payBtn      = document.getElementById('pay-btn');
+  const payBtnText  = document.getElementById('pay-btn-text');
+  const spinner     = document.getElementById('pay-btn-spinner');
+
+  payBtn.disabled  = true;
+  payBtnText.textContent = 'Processing…';
+  spinner.classList.remove('hidden');
+
+  const totalPrice = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const orderItems = cart.map(item => ({
+    product: item.id, name: item.name,
+    image: item.image, price: item.price, qty: item.quantity
+  }));
+  const shippingAddress = {
+    address:    document.getElementById('ship-address').value,
+    city:       document.getElementById('ship-city').value,
+    postalCode: document.getElementById('ship-zip').value,
+    country:    document.getElementById('ship-country').value
+  };
+
+  try {
+    // Step A: create PaymentIntent on server
+    const intentRes = await fetch(`${API_BASE}/api/payment/create-payment-intent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userInfo.token}`
+      },
+      body: JSON.stringify({ amount: totalPrice })
+    });
+    const { clientSecret } = await intentRes.json();
+    if (!clientSecret) throw new Error('Failed to get payment intent');
+
+    // Step B: confirm card payment via Stripe
+    const { paymentIntent, error } = await stripeClient.confirmCardPayment(clientSecret, {
+      payment_method: { card: cardElement }
+    });
+
+    if (error) {
+      document.getElementById('card-errors').textContent = error.message;
+      return;
     }
 
-    if (cart.length === 0) {
-        alert("Your cart is empty!");
-        return;
+    if (paymentIntent.status === 'succeeded') {
+      // Step C: create the order in DB
+      const orderRes = await fetch(`${API_BASE}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`
+        },
+        body: JSON.stringify({ orderItems, totalPrice, shippingAddress })
+      });
+      const createdOrder = await orderRes.json();
+
+      // Step D: mark order as paid
+      await fetch(`${API_BASE}/api/orders/${createdOrder._id}/pay`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${userInfo.token}` }
+      });
+
+      closeCheckoutModal();
+      cart = [];
+      updateCartUI();
+      closeCart();
+      alert('🎉 Payment successful! Thank you for your order.');
     }
+  } catch (err) {
+    console.error('Payment error:', err);
+    document.getElementById('card-errors').textContent = 'Something went wrong. Please try again.';
+  } finally {
+    payBtn.disabled = false;
+    payBtnText.textContent = 'Pay Now';
+    spinner.classList.add('hidden');
+  }
+}
 
-    const orderItems = cart.map(item => ({
-        product: item.id,
-        name: item.name,
-        image: item.image,
-        price: item.price,
-        qty: item.quantity
-    }));
-
-    const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-    try {
-        const res = await fetch(`${API_BASE}/api/orders`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${userInfo.token}`
-            },
-            body: JSON.stringify({ orderItems, totalPrice })
-        });
-
-        if (res.ok) {
-            alert('🎉 Order placed successfully! Thank you for your purchase.');
-            cart = [];
-            updateCartUI();
-            closeCart();
-        } else {
-            const data = await res.json();
-            alert(data.message || 'Failed to place order');
-        }
-    } catch (error) {
-        console.error("Checkout error:", error);
-        alert('Network error during checkout.');
-    }
-});
+// ─── Hook checkout button to modal (replaces old direct order creation) ────────
+document.querySelector('.checkout-btn').addEventListener('click', openCheckoutModal);
 
 // ─── Search & Sort ────────────────────────────────────────────────────────────
 searchBar.addEventListener('keyup', (e) => {

@@ -19,5 +19,27 @@ router.post('/create-payment-intent', protect, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+router.post('/webhook',
+  express.raw({ type: 'application/json' }),
+  async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body, sig, process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      return res.status(400).send(`Webhook error: ${err.message}`);
+    }
+
+    if (event.type === 'payment_intent.succeeded') {
+      const pi = event.data.object;
+      console.log('✅ Payment confirmed by Stripe webhook:', pi.id);
+      // You can look up order by metadata and mark it paid here
+    }
+
+    res.json({ received: true });
+  }
+);
 
 module.exports = router;
