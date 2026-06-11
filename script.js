@@ -90,6 +90,7 @@ function getCommentsForProduct(productId) {
 
 // ─── Auth UI State ─────────────────────────────────────────────────────────────
 function updateAuthUI() {
+
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (userInfo) {
         // Show user name and logout button
@@ -106,6 +107,10 @@ function updateAuthUI() {
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) logoutBtn.style.display = 'none';
     }
+    const adminLink = document.getElementById('admin-nav-link');
+if (adminLink) {
+    adminLink.style.display = (userInfo && userInfo.isAdmin) ? 'block' : 'none';
+}
 }
 
 document.getElementById('logout-btn')?.addEventListener('click', () => {
