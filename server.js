@@ -11,7 +11,8 @@ const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
-
+const reviewRoutes = require('./routes/reviewRoutes'); // ← add at top with other requires
+              
 // ✅ Middleware MUST come BEFORE routes
 app.use(cors());
 app.use(express.json());
@@ -28,6 +29,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ecommerce')
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/reviews', reviewRoutes);  
 
 // 404 handler
 app.use((req, res) => {

@@ -500,45 +500,159 @@ window.viewProduct = function(productId) {
     `;
 
     document.getElementById('new-comment-form').dataset.currentProductId = productId;
-    renderComments(productId);
+     loadReviews(productId);
 };
-
-// ─── Comments ─────────────────────────────────────────────────────────────────
+// ─── Reviews (MongoDB) ────────────────────────────────────────────────────────
 const commentsList = document.getElementById('comments-list');
-const reviewCount = document.getElementById('review-count');
-const commentForm = document.getElementById('new-comment-form');
+const reviewCount  = document.getElementById('review-count');
+const commentForm  = document.getElementById('new-comment-form');
 const commentInput = document.getElementById('comment-input');
 
-function renderComments(productId) {
-    const comments = getCommentsForProduct(productId);
-    commentsList.innerHTML = "";
-    reviewCount.innerText = `${comments.length} Review${comments.length !== 1 ? 's' : ''}`;
+// Keeps track of the productId currently being viewed (needed for refresh after edit/delete)
+let currentProductId = null;
 
-    if (comments.length === 0) {
+// ─── Load reviews from backend ────────────────────────────────────────────────
+async function loadReviews(productId) {
+    currentProductId = productId;
+    commentsList.innerHTML = "<p style='color:#86868b;'>Loading reviews...</p>";
+    try {
+        const res     = await fetch(`${API_BASE}/api/reviews/${productId}`);
+        const reviews = await res.json();
+        renderReviews(reviews);
+    } catch (err) {
+        console.error('Failed to load reviews:', err);
+        commentsList.innerHTML = "<p style='color:red;'>Failed to load reviews.</p>";
+    }
+}
+
+// ─── Render reviews list ──────────────────────────────────────────────────────
+function renderReviews(reviews) {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    reviewCount.innerText = `${reviews.length} Review${reviews.length !== 1 ? 's' : ''}`;
+    commentsList.innerHTML = '';
+
+    if (reviews.length === 0) {
         commentsList.innerHTML = "<p style='color:#86868b;'>No reviews yet. Be the first!</p>";
         return;
     }
 
-    [...comments].reverse().forEach(comment => {
-        const initial = comment.author.charAt(0).toUpperCase();
+    reviews.forEach(r => {
+        const initial  = r.author.charAt(0).toUpperCase();
+        const date     = new Date(r.createdAt).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+        });
+
+        // Only show Edit / Delete buttons if this review belongs to the logged-in user
+        const isOwner  = userInfo && userInfo._id === r.user;
+        const ownerActions = isOwner ? `
+            <div class="review-actions">
+                <button class="review-edit-btn"   onclick="startEditReview('${r._id}', this)">
+                    <i class="fa-solid fa-pen"></i> Edit
+                </button>
+                <button class="review-delete-btn" onclick="deleteReview('${r._id}')">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        ` : '';
+
         const div = document.createElement('div');
-        div.className = 'comment-card';
+        div.className   = 'comment-card';
+        div.dataset.id  = r._id;
         div.innerHTML = `
             <div class="comment-avatar">${initial}</div>
             <div class="comment-content">
                 <div class="comment-top">
-                    <span class="comment-author">${comment.author}</span>
-                    <span class="comment-date">${comment.date}</span>
+                    <span class="comment-author">${r.author}</span>
+                    <span class="comment-date">${date}</span>
                 </div>
-                <p class="comment-text">${comment.text}</p>
+                <p class="comment-text" id="review-text-${r._id}">${r.text}</p>
+                ${ownerActions}
             </div>
         `;
         commentsList.appendChild(div);
     });
 }
 
-commentForm.addEventListener('submit', (e) => {
+// ─── Edit Review ─────────────────────────────────────────────────────────────
+window.startEditReview = function(reviewId, btn) {
+    const textEl = document.getElementById(`review-text-${reviewId}`);
+    const currentText = textEl.innerText;
+
+    // Replace the paragraph with an inline textarea + Save/Cancel buttons
+    textEl.outerHTML = `
+        <textarea id="edit-textarea-${reviewId}" class="review-edit-textarea"
+                  rows="3">${currentText}</textarea>
+        <div class="review-edit-controls">
+            <button class="btn-primary review-save-btn"
+                    onclick="saveEditReview('${reviewId}')">Save</button>
+            <button class="review-cancel-btn"
+                    onclick="loadReviews('${currentProductId}')">Cancel</button>
+        </div>
+    `;
+
+    // Hide the Edit/Delete buttons while editing
+    btn.closest('.review-actions').style.display = 'none';
+
+    document.getElementById(`edit-textarea-${reviewId}`).focus();
+};
+
+window.saveEditReview = async function(reviewId) {
+    const textarea = document.getElementById(`edit-textarea-${reviewId}`);
+    const newText  = textarea.value.trim();
+
+    if (!newText) {
+        alert('Review cannot be empty.');
+        return;
+    }
+
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    try {
+        const res = await fetch(`${API_BASE}/api/reviews/${reviewId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userInfo.token}`
+            },
+            body: JSON.stringify({ text: newText })
+        });
+
+        if (res.ok) {
+            loadReviews(currentProductId); // ✅ Refresh after save
+        } else {
+            const data = await res.json();
+            alert(data.message || 'Failed to update review');
+        }
+    } catch (err) {
+        alert('Network error. Try again.');
+    }
+};
+
+// ─── Delete Review ────────────────────────────────────────────────────────────
+window.deleteReview = async function(reviewId) {
+    if (!confirm('Are you sure you want to delete this review?')) return;
+
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    try {
+        const res = await fetch(`${API_BASE}/api/reviews/${reviewId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${userInfo.token}` }
+        });
+
+        if (res.ok) {
+            loadReviews(currentProductId); // ✅ Refresh after delete
+        } else {
+            const data = await res.json();
+            alert(data.message || 'Failed to delete review');
+        }
+    } catch (err) {
+        alert('Network error. Try again.');
+    }
+};
+
+// ─── Submit New Review ────────────────────────────────────────────────────────
+commentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (!userInfo) {
         alert('Please sign in to leave a review.');
@@ -546,18 +660,30 @@ commentForm.addEventListener('submit', (e) => {
         return;
     }
 
-    const text = commentInput.value.trim();
-    if (!text) return;
-
+    const text      = commentInput.value.trim();
     const productId = e.target.dataset.currentProductId;
-    productComments[productId].push({
-        author: userInfo.name,
-        date: 'Just now',
-        text
-    });
+    if (!text || !productId) return;
 
-    renderComments(productId);
-    commentInput.value = "";
+    try {
+        const res = await fetch(`${API_BASE}/api/reviews/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userInfo.token}`
+            },
+            body: JSON.stringify({ text })
+        });
+
+        if (res.ok) {
+            commentInput.value = '';
+            loadReviews(productId); // ✅ Refresh after posting
+        } else {
+            const data = await res.json();
+            alert(data.message || 'Failed to post review');
+        }
+    } catch (err) {
+        alert('Network error. Try again.');
+    }
 });
 
 window.goBack = function() {

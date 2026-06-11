@@ -753,7 +753,7 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(15, 23, 42, 0.35);
   z-index: 999;
 }
 .orders-overlay.active { display: block; }
@@ -766,11 +766,11 @@ body {
   max-width: 95vw;
   height: 100%;
   overflow-y: auto;
-  background: #1c1c1e;
+  background: #f8fafc;
   z-index: 1000;
   padding: 28px 24px;
   transition: right 0.35s ease;
-  border-left: 1px solid rgba(255,255,255,0.08);
+  border-left:  1px solid #e5e7eb;
 }
 .orders-sidebar.open { right: 0; }
 
@@ -780,21 +780,22 @@ body {
   align-items: center;
   margin-bottom: 24px;
 }
-.orders-header h2 { font-size: 1.4rem; color: #f5f5f7; }
+.orders-header h2 { font-size: 1.4rem; color: #111827; }
 
 .close-orders-btn {
   background: none;
   border: none;
-  color: #86868b;
+  color: #6b7280;
   font-size: 1.4rem;
   cursor: pointer;
   transition: color 0.2s;
 }
-.close-orders-btn:hover { color: #f5f5f7; }
+.close-orders-btn:hover { color: #111827; }
 
 .order-card {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border-radius: 14px;
   padding: 18px;
   margin-bottom: 16px;
@@ -807,10 +808,10 @@ body {
 }
 .order-id {
   font-size: 0.75rem;
-  color: #86868b;
+  color: #6b7280;
   font-family: monospace;
 }
-.order-date { font-size: 0.8rem; color: #86868b; }
+.order-date { font-size: 0.8rem; color: #6b7280; }
 
 .order-status {
   font-size: 0.75rem;
@@ -818,8 +819,15 @@ body {
   padding: 4px 10px;
   border-radius: 20px;
 }
-.status-paid { background: #0a3d2e; color: #30d158; }
-.status-pending { background: #3d2e0a; color: #ffd60a; }
+.status-paid {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
 
 .order-items-preview {
   display: flex;
@@ -831,24 +839,104 @@ body {
   display: flex;
   justify-content: space-between;
   font-size: 0.88rem;
-  color: #c5c5c7;
+  color: #4b5563;
 }
-.order-item-row span:last-child { color: #f5f5f7; font-weight: 500; }
+.order-item-row span:last-child { color: #111827; font-weight: 500; }
 
 .order-total {
-  border-top: 1px solid rgba(255,255,255,0.08);
+    border-top: 1px solid #e5e7eb;
+  color: #111827;
   padding-top: 10px;
   display: flex;
   justify-content: space-between;
   font-weight: 700;
-  color: #f5f5f7;
   font-size: 0.95rem;
 }
-.order-total span:last-child { color: #007a68; }
+.order-total span:last-child { color:#059669; }
 
 .empty-orders-msg {
   text-align: center;
-  color: #86868b;
+  color: #6b7280;
   margin-top: 48px;
   font-size: 0.95rem;
+}
+/* ─── Review Edit / Delete Actions ─────────────────────────── */
+.review-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.review-edit-btn,
+.review-delete-btn {
+    background: none;
+    border: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s;
+}
+
+.review-edit-btn {
+    color: #007a68;
+    border: 1px solid #007a68;
+}
+.review-edit-btn:hover {
+    background: #007a68;
+    color: #fff;
+}
+
+.review-delete-btn {
+    color: #ff453a;
+    border: 1px solid #ff453a;
+}
+.review-delete-btn:hover {
+    background: #ff453a;
+    color: #fff;
+}
+
+/* Inline edit textarea */
+.review-edit-textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: #000000;
+    font-size: 0.9rem;
+    resize: vertical;
+    margin-top: 6px;
+    font-family: inherit;
+}
+.review-edit-textarea:focus {
+    outline: none;
+    border-color: #007a68;
+}
+
+.review-edit-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.review-save-btn {
+    padding: 6px 18px !important;
+    font-size: 0.85rem !important;
+}
+
+.review-cancel-btn {
+    background: none;
+    border: 1px solid #86868b;
+    color: #86868b;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: border-color 0.2s, color 0.2s;
+}
+.review-cancel-btn:hover {
+    border-color: #f5f5f7;
+    color: #f5f5f7;
 }
