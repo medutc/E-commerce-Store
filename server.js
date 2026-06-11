@@ -12,7 +12,8 @@ const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
 const reviewRoutes = require('./routes/reviewRoutes'); // ← add at top with other requires
-              
+ const paymentRoutes = require('./routes/paymentRoutes');
+app.use('/api/payment', paymentRoutes);             
 // ✅ Middleware MUST come BEFORE routes
 app.use(cors());
 app.use(express.json());
