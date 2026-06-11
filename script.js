@@ -4,7 +4,87 @@
 const API_BASE = 'http://localhost:5000';
 
 let products = [];
+// ─── My Orders ────────────────────────────────────────────────────────────────
+const ordersSidebar = document.getElementById('orders-sidebar');
+const ordersOverlay = document.getElementById('orders-overlay');
+const ordersListEl  = document.getElementById('orders-list');
+const closeOrdersBtn = document.getElementById('close-orders-btn');
 
+function openOrdersSidebar() {
+  ordersSidebar.classList.add('open');
+  ordersOverlay.classList.add('active');
+  loadMyOrders();
+}
+
+function closeOrdersSidebar() {
+  ordersSidebar.classList.remove('open');
+  ordersOverlay.classList.remove('active');
+}
+
+closeOrdersBtn.addEventListener('click', closeOrdersSidebar);
+ordersOverlay.addEventListener('click', closeOrdersSidebar);
+
+// Clicking the username in the navbar opens "My Orders"
+document.getElementById('user-name-display').addEventListener('click', () => {
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+  if (userInfo) openOrdersSidebar();
+});
+
+async function loadMyOrders() {
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+  if (!userInfo) return;
+
+  ordersListEl.innerHTML = '<p class="empty-orders-msg">Loading your orders...</p>';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/myorders`, {
+      headers: { Authorization: `Bearer ${userInfo.token}` }
+    });
+    const orders = await res.json();
+
+    if (!orders.length) {
+      ordersListEl.innerHTML = '<p class="empty-orders-msg">You have no orders yet.</p>';
+      return;
+    }
+
+    ordersListEl.innerHTML = '';
+    orders.forEach(order => {
+      const date = new Date(order.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric'
+      });
+      const statusClass = order.isPaid ? 'status-paid' : 'status-pending';
+      const statusText  = order.isPaid ? '✅ Paid' : '⏳ Pending';
+
+      const itemsHTML = order.orderItems.map(item => `
+        <div class="order-item-row">
+          <span>${item.name} × ${item.qty}</span>
+          <span>$${(item.price * item.qty).toFixed(2)}</span>
+        </div>
+      `).join('');
+
+      const card = document.createElement('div');
+      card.className = 'order-card';
+      card.innerHTML = `
+        <div class="order-card-header">
+          <div>
+            <div class="order-id">Order #${order._id.slice(-8).toUpperCase()}</div>
+            <div class="order-date">${date}</div>
+          </div>
+          <span class="order-status ${statusClass}">${statusText}</span>
+        </div>
+        <div class="order-items-preview">${itemsHTML}</div>
+        <div class="order-total">
+          <span>Total</span>
+          <span>$${order.totalPrice.toFixed(2)}</span>
+        </div>
+      `;
+      ordersListEl.appendChild(card);
+    });
+  } catch (err) {
+    ordersListEl.innerHTML = '<p class="empty-orders-msg">Failed to load orders.</p>';
+    console.error(err);
+  }
+}
 // ─── Fetch Products from DB ───────────────────────────────────────────────────
 async function fetchProducts() {
     try {
