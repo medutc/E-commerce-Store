@@ -21,9 +21,22 @@
                 </li>
             </ul>
             
-            <div class="user-icon" id="open-auth-btn">
-                <i class="fa-regular fa-user"></i>
-            </div>
+           <div class="nav-user-area">
+    <span id="user-name-display"
+          style="display:none; font-weight:600; color:#007a68; cursor:pointer;"
+          id="open-orders-trigger">
+    </span>
+    <div class="user-icon" id="open-auth-btn">
+        <i class="fa-regular fa-user"></i>
+    </div>
+    <button id="logout-btn"
+            style="display:none; border:none; background:none; cursor:pointer; color:#86868b; font-size:0.85rem;">
+        Logout
+    </button>
+    <li id="admin-nav-link" style="display:none; list-style:none;">
+        <a href="admin.html" style="color:#007a68; font-weight:600;">Admin</a>
+    </li>
+</div>
 
             <div class="cart-icon">
                 <i class="fa-solid fa-bag-shopping"></i>
@@ -141,6 +154,20 @@
             </form>
         </div>
     </div>
+    <!-- MY ORDERS SIDEBAR -->
+<div class="orders-overlay" id="orders-overlay"></div>
+
+<div class="orders-sidebar glass-card" id="orders-sidebar">
+    <div class="orders-header">
+        <h2>My Orders</h2>
+        <button class="close-orders" id="close-orders">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    <div class="orders-body" id="orders-body">
+        <p class="empty-orders-msg">Loading your orders...</p>
+    </div>
+</div>
     <script src="script.js"></script>
 </body>
 </html>
