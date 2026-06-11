@@ -184,10 +184,14 @@
                         <label>Stock Count *</label>
                         <input type="number" id="product-stock" placeholder="0" min="0" required>
                     </div>
-                    <div class="form-group full-width">
-                        <label>Image Path *</label>
-                        <input type="text" id="product-image" placeholder="/images/product.jpg" required>
-                    </div>
+                    <div class="form-group">
+  <label>Product Image</label>
+  <!-- Option A: Upload a file -->
+  <input type="file" id="image-upload-input" accept="image/*" style="margin-bottom:8px;">
+  <small style="color:#86868b; display:block; margin-bottom:6px;">— or paste an image URL —</small>
+  <!-- Option B: URL -->
+  <input type="text" id="product-image" placeholder="Image URL (optional if uploaded)">
+</div>
                     <div class="form-group full-width">
                         <label>Description *</label>
                         <textarea id="product-description" rows="3" placeholder="Describe the product..." required></textarea>

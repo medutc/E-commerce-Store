@@ -1,8 +1,8 @@
+
 // admin.js
 const API_BASE = 'http://localhost:5000';
 
 // ─── Auth Guard ───────────────────────────────────────────────────────────────
-// Redirect to store if not logged in OR not an admin
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 if (!userInfo || !userInfo.token || !userInfo.isAdmin) {
@@ -28,8 +28,8 @@ function showToast(message, type = 'success') {
 }
 
 // ─── Tab Navigation ───────────────────────────────────────────────────────────
-const navItems = document.querySelectorAll('.nav-item[data-tab]');
-const tabPanels = document.querySelectorAll('.tab-panel');
+const navItems    = document.querySelectorAll('.nav-item[data-tab]');
+const tabPanels   = document.querySelectorAll('.tab-panel');
 const topbarTitle = document.getElementById('topbar-title');
 
 navItems.forEach(item => {
@@ -37,18 +37,14 @@ navItems.forEach(item => {
         e.preventDefault();
         const tab = item.dataset.tab;
 
-        // Update active nav
         navItems.forEach(n => n.classList.remove('active'));
         item.classList.add('active');
 
-        // Show correct panel
         tabPanels.forEach(p => p.classList.remove('active'));
         document.getElementById(`tab-${tab}`).classList.add('active');
 
-        // Update topbar title
         topbarTitle.innerText = tab.charAt(0).toUpperCase() + tab.slice(1);
 
-        // Reload data for that tab
         if (tab === 'products') loadProducts();
         if (tab === 'orders')   loadOrders();
         if (tab === 'users')    loadUsers();
@@ -66,8 +62,8 @@ async function loadStats() {
     try {
         const [prodRes, orderRes, userRes] = await Promise.all([
             fetch(`${API_BASE}/api/products`, { headers: HEADERS }),
-            fetch(`${API_BASE}/api/orders`, { headers: HEADERS }),
-            fetch(`${API_BASE}/api/users`, { headers: HEADERS })
+            fetch(`${API_BASE}/api/orders`,   { headers: HEADERS }),
+            fetch(`${API_BASE}/api/users`,    { headers: HEADERS })
         ]);
 
         const products = await prodRes.json();
@@ -93,7 +89,7 @@ async function loadProducts() {
     tbody.innerHTML = `<tr><td colspan="6" class="loading-row"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</td></tr>`;
 
     try {
-        const res = await fetch(`${API_BASE}/api/products`);
+        const res      = await fetch(`${API_BASE}/api/products`);
         const products = await res.json();
 
         if (products.length === 0) {
@@ -140,6 +136,7 @@ document.getElementById('open-add-product-btn').addEventListener('click', () => 
     document.getElementById('save-product-btn').innerHTML = '<i class="fa-solid fa-plus"></i> Add Product';
     productForm.reset();
     document.getElementById('product-id').value = '';
+    clearImagePreview();
     productModalOverlay.classList.add('active');
 });
 
@@ -152,6 +149,84 @@ productModalOverlay.addEventListener('click', (e) => {
 function closeProductModal() {
     productModalOverlay.classList.remove('active');
     productForm.reset();
+    clearImagePreview();
+}
+
+// ─── Image Upload Logic ────────────────────────────────────
+
+// Shows a live preview when the user picks a file
+document.getElementById('image-upload-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) { clearImagePreview(); return; }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => showImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
+
+    // Clear the URL field so the file takes priority
+    document.getElementById('product-image').value = '';
+});
+
+// Shows a live preview when the user types a URL
+document.getElementById('product-image').addEventListener('input', (e) => {
+    const url = e.target.value.trim();
+    if (url) {
+        showImagePreview(url);
+        // Clear the file input so the URL takes priority
+        document.getElementById('image-upload-input').value = '';
+    } else {
+        clearImagePreview();
+    }
+});
+
+function showImagePreview(src) {
+    const preview = document.getElementById('image-preview');
+    if (!preview) return;
+    preview.innerHTML = `<img src="${src}" alt="Preview"
+        style="width:100%; max-height:180px; object-fit:contain; border-radius:10px; margin-top:8px;"
+        onerror="this.style.display='none'">`;
+}
+
+function clearImagePreview() {
+    const preview = document.getElementById('image-preview');
+    if (preview) preview.innerHTML = '';
+}
+
+// Uploads the chosen file to the server and returns the saved image path
+async function uploadImageFile(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const res = await fetch(`${API_BASE}/api/products/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${TOKEN}` }, // No Content-Type — browser sets it for FormData
+        body: formData
+    });
+
+    if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Image upload failed');
+    }
+
+    const data = await res.json();
+    return data.imagePath; // e.g. /images/product_1718200000000.jpg
+}
+
+// Resolves whichever image source the admin used (file upload OR URL)
+async function getImagePath() {
+    const fileInput = document.getElementById('image-upload-input');
+    const urlInput  = document.getElementById('product-image').value.trim();
+
+    if (fileInput.files.length > 0) {
+        // Upload the file first, then use the returned server path
+        return await uploadImageFile(fileInput.files[0]);
+    }
+
+    if (urlInput) {
+        return urlInput;
+    }
+
+    throw new Error('Please upload an image or provide an image URL.');
 }
 
 // ─── Edit Product ──────────────────────────────────────────
@@ -160,15 +235,19 @@ window.openEditProduct = async function(productId) {
         const res = await fetch(`${API_BASE}/api/products/${productId}`);
         const p   = await res.json();
 
-        document.getElementById('modal-title').innerText = 'Edit Product';
-        document.getElementById('save-product-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
-        document.getElementById('product-id').value          = p._id;
-        document.getElementById('product-name').value        = p.name;
-        document.getElementById('product-category').value    = p.category;
-        document.getElementById('product-price').value       = p.price;
-        document.getElementById('product-stock').value       = p.countInStock;
-        document.getElementById('product-image').value       = p.image;
-        document.getElementById('product-description').value = p.description;
+        document.getElementById('modal-title').innerText             = 'Edit Product';
+        document.getElementById('save-product-btn').innerHTML        = '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
+        document.getElementById('product-id').value                  = p._id;
+        document.getElementById('product-name').value                = p.name;
+        document.getElementById('product-category').value            = p.category;
+        document.getElementById('product-price').value               = p.price;
+        document.getElementById('product-stock').value               = p.countInStock;
+        document.getElementById('product-image').value               = p.image;
+        document.getElementById('product-description').value         = p.description;
+
+        // Show the current image as preview
+        const imgSrc = p.image.startsWith('/') ? `${API_BASE}${p.image}` : p.image;
+        showImagePreview(imgSrc);
 
         productModalOverlay.classList.add('active');
     } catch (err) {
@@ -180,26 +259,37 @@ window.openEditProduct = async function(productId) {
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const id = document.getElementById('product-id').value;
-    const body = {
-        name:         document.getElementById('product-name').value.trim(),
-        category:     document.getElementById('product-category').value.trim(),
-        price:        parseFloat(document.getElementById('product-price').value),
-        countInStock: parseInt(document.getElementById('product-stock').value),
-        image:        document.getElementById('product-image').value.trim(),
-        description:  document.getElementById('product-description').value.trim()
-    };
-
-    const isEdit = id !== '';
-    const url    = isEdit ? `${API_BASE}/api/products/${id}` : `${API_BASE}/api/products`;
-    const method = isEdit ? 'PUT' : 'POST';
-
     const saveBtn = document.getElementById('save-product-btn');
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
     try {
-        const res = await fetch(url, { method, headers: HEADERS, body: JSON.stringify(body) });
+        // ✅ Resolve image — either upload file or use URL
+        let image;
+        try {
+            image = await getImagePath();
+        } catch (imgErr) {
+            showToast(imgErr.message, 'error');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Product';
+            return;
+        }
+
+        const id = document.getElementById('product-id').value;
+        const body = {
+            name:         document.getElementById('product-name').value.trim(),
+            category:     document.getElementById('product-category').value.trim(),
+            price:        parseFloat(document.getElementById('product-price').value),
+            countInStock: parseInt(document.getElementById('product-stock').value),
+            image,        // ✅ from upload or URL
+            description:  document.getElementById('product-description').value.trim()
+        };
+
+        const isEdit = id !== '';
+        const url    = isEdit ? `${API_BASE}/api/products/${id}` : `${API_BASE}/api/products`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const res  = await fetch(url, { method, headers: HEADERS, body: JSON.stringify(body) });
         const data = await res.json();
 
         if (res.ok) {
@@ -235,8 +325,8 @@ async function loadOrders() {
         }
 
         tbody.innerHTML = orders.map(o => {
-            const date     = new Date(o.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
-            const customer = o.user ? (o.user.name || o.user.email || 'Unknown') : 'Unknown';
+            const date      = new Date(o.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            const customer  = o.user ? (o.user.name || o.user.email || 'Unknown') : 'Unknown';
             const itemCount = o.orderItems.reduce((sum, i) => sum + i.qty, 0);
 
             return `
@@ -306,7 +396,7 @@ async function loadUsers() {
 
         tbody.innerHTML = users.map(u => {
             const initial = u.name.charAt(0).toUpperCase();
-            const date    = new Date(u.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+            const date    = new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
             return `
                 <tr>
@@ -354,7 +444,6 @@ window.confirmDelete = function(type, id, name) {
     confirmMessage.innerHTML = `Are you sure you want to delete <strong>${name}</strong>? This cannot be undone.`;
     confirmOverlay.classList.add('active');
 
-    // Store the action to run on confirm
     pendingDeleteAction = async () => {
         const url    = type === 'product' ? `${API_BASE}/api/products/${id}` : `${API_BASE}/api/users/${id}`;
         const method = 'DELETE';
@@ -363,8 +452,8 @@ window.confirmDelete = function(type, id, name) {
             const res = await fetch(url, { method, headers: HEADERS });
             if (res.ok) {
                 showToast(`✅ ${type.charAt(0).toUpperCase() + type.slice(1)} deleted.`);
-                if (type === 'product') { loadProducts(); }
-                if (type === 'user')    { loadUsers(); }
+                if (type === 'product') loadProducts();
+                if (type === 'user')    loadUsers();
                 loadStats();
             } else {
                 const data = await res.json();
@@ -394,4 +483,4 @@ function closeConfirmModal() {
 
 // ─── Init ──────────────────────────────────────────────────
 loadStats();
-loadProducts(); // Default tab
+loadProducts();
