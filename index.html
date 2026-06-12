@@ -53,13 +53,23 @@
 
     <header class="hero">
         <div class="hero-content">
-            <h1>Elevate Your Workspace.</h1>
-            <p>Discover our curated collection of premium, ultra-minimalist tech accessories designed for the modern professional.</p>
+            <div class="hero-eyebrow">
+                <i class="fa-solid fa-bolt" style="font-size:0.65rem;"></i>
+                Premium Tech Accessories
+            </div>
+            <h1>Gear That <span class="accent-word">Elevates</span><br>Your Setup.</h1>
+            <p>Curated tech accessories for the modern workspace. Built for focus, designed to last.</p>
+            <div class="hero-cta">
+                <a href="#products" class="btn-primary"><i class="fa-solid fa-bag-shopping" style="font-size:0.8rem;"></i> Shop Now</a>
+                <button class="btn-ghost"><i class="fa-regular fa-bookmark" style="font-size:0.8rem;"></i> View Bestsellers</button>
+            </div>
         </div>
     </header>
 
     <section id="products" class="product-section">
-        <h2>Trending Now</h2>
+        <div class="section-header">
+            <h2>Trending Now <span id="product-count-label"></span></h2>
+        </div>
         
         <div class="controls-container">
             <input type="text" id="search-bar" class="search-input glass-card" placeholder="Search products...">
